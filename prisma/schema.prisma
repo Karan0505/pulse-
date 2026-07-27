@@ -1,0 +1,359 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum NotificationType {
+  SYSTEM
+  BLOG_COMMENT
+  TEAM_INVITE
+  ORGANIZATION_UPDATE
+  GENERAL
+}
+
+model User {
+  id                String             @id @default(uuid())
+  email             String             @unique
+  passwordHash      String
+  firstName         String
+  lastName          String
+  avatarUrl         String?
+  isEmailVerified   Boolean            @default(false)
+  status            UserStatus         @default(PENDING)
+  roleId            String
+  organizationId    String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  role              Role               @relation(fields: [roleId], references: [id])
+  organization      Organization?      @relation("OrgMembers", fields: [organizationId], references: [id])
+  ownedOrganizations Organization[]    @relation("OrgOwner")
+  teams             Team[]             @relation("TeamMembers")
+  blogs             Blog[]             @relation("UserBlogs")
+  comments          Comment[]          @relation("UserComments")
+  notifications     Notification[]     @relation("UserNotifications")
+  activityLogs      ActivityLog[]      @relation("UserActivityLogs")
+  apiKeys           ApiKey[]           @relation("UserApiKeys")
+  refreshTokens     RefreshToken[]     @relation("UserRefreshTokens")
+  sessions          Session[]          @relation("UserSessions")
+  passwordResets    PasswordReset[]    @relation("UserPasswordResets")
+  emailVerifications EmailVerification[] @relation("UserEmailVerifications")
+  aiHistories       AIHistory[]        @relation("UserAIHistories")
+
+  @@index([email])
+  @@index([roleId])
+  @@index([organizationId])
+}
+
+model Role {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  permissions Permission[] @relation("RolePermissions")
+  users       User[]
+
+  @@index([name])
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  action      String   // e.g., "create", "read", "update", "delete", "manage"
+  resource    String   // e.g., "blog", "user", "organization", "analytics"
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  roles       Role[]   @relation("RolePermissions")
+
+  @@unique([action, resource])
+  @@index([resource])
+}
+
+model Organization {
+  id          String      @id @default(uuid())
+  name        String
+  slug        String      @unique
+  logoUrl     String?
+  ownerId     String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  owner       User        @relation("OrgOwner", fields: [ownerId], references: [id])
+  members     User[]      @relation("OrgMembers")
+  teams       Team[]      @relation("OrgTeams")
+  blogs       Blog[]      @relation("OrgBlogs")
+  analytics   Analytics[] @relation("OrgAnalytics")
+  apiKeys     ApiKey[]    @relation("OrgApiKeys")
+
+  @@index([slug])
+  @@index([ownerId])
+}
+
+model Team {
+  id             String       @id @default(uuid())
+  name           String
+  description    String?
+  organizationId String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation("OrgTeams", fields: [organizationId], references: [id], onDelete: Cascade)
+  members        User[]       @relation("TeamMembers")
+  blogs          Blog[]       @relation("TeamBlogs")
+  analytics      Analytics[]  @relation("TeamAnalytics")
+
+  @@index([organizationId])
+}
+
+model Blog {
+  id             String       @id @default(uuid())
+  title          String
+  slug           String       @unique
+  content        String
+  excerpt        String?
+  coverImage     String?
+  status         BlogStatus   @default(DRAFT)
+  authorId       String
+  categoryId     String
+  organizationId String?
+  teamId         String?
+  viewCount      Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  author         User         @relation("UserBlogs", fields: [authorId], references: [id])
+  category       Category     @relation("CategoryBlogs", fields: [categoryId], references: [id])
+  organization   Organization? @relation("OrgBlogs", fields: [organizationId], references: [id])
+  team           Team?        @relation("TeamBlogs", fields: [teamId], references: [id])
+  tags           Tag[]        @relation("BlogTags")
+  comments       Comment[]    @relation("BlogComments")
+
+  @@index([slug])
+  @@index([authorId])
+  @@index([categoryId])
+  @@index([status])
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  parentId    String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  blogs       Blog[]     @relation("CategoryBlogs")
+
+  @@index([slug])
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  blogs     Blog[]   @relation("BlogTags")
+
+  @@index([slug])
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  content   String
+  blogId    String
+  authorId  String
+  parentId  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  blog      Blog      @relation("BlogComments", fields: [blogId], references: [id], onDelete: Cascade)
+  author    User      @relation("UserComments", fields: [authorId], references: [id])
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+
+  @@index([blogId])
+  @@index([authorId])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType @default(GENERAL)
+  isRead    Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  user      User             @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation("UserActivityLogs", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+}
+
+model Analytics {
+  id             String        @id @default(uuid())
+  date           DateTime      @default(now())
+  metricName     String
+  metricValue    Float
+  metadata       Json?
+  organizationId String?
+  teamId         String?
+  createdAt      DateTime      @default(now())
+
+  organization   Organization? @relation("OrgAnalytics", fields: [organizationId], references: [id])
+  team           Team?         @relation("TeamAnalytics", fields: [teamId], references: [id])
+
+  @@index([metricName])
+  @@index([date])
+}
+
+model ApiKey {
+  id             String        @id @default(uuid())
+  name           String
+  keyHash        String        @unique
+  userId         String
+  organizationId String?
+  expiresAt      DateTime?
+  isActive       Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user           User          @relation("UserApiKeys", fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization? @relation("OrgApiKeys", fields: [organizationId], references: [id])
+
+  @@index([userId])
+  @@index([keyHash])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String
+  deviceId  String?
+  expiresAt DateTime
+  isRevoked Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation("UserRefreshTokens", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation("UserSessions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation("UserPasswordResets", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+}
+
+model EmailVerification {
+  id         String   @id @default(uuid())
+  userId     String
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  isVerified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user       User     @relation("UserEmailVerifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+}
+
+model AIHistory {
+  id             String   @id @default(uuid())
+  userId         String
+  conversationId String
+  prompt         String
+  response       String
+  tokensUsed     Int      @default(0)
+  model          String   @default("gemini-3.6-flash")
+  createdAt      DateTime @default(now())
+
+  user           User     @relation("UserAIHistories", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([conversationId])
+}
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  actorId        String
+  action         String
+  targetResource String
+  previousState  Json?
+  newState       Json?
+  createdAt      DateTime @default(now())
+
+  @@index([actorId])
+  @@index([targetResource])
+}

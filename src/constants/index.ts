@@ -1,0 +1,34 @@
+export enum SystemRole {
+  ADMIN = 'ADMIN',
+  MANAGER = 'MANAGER',
+  MEMBER = 'MEMBER',
+  GUEST = 'GUEST',
+}
+
+export enum SystemPermission {
+  MANAGE_USERS = 'manage:users',
+  MANAGE_ORGANIZATIONS = 'manage:organizations',
+  MANAGE_TEAMS = 'manage:teams',
+  MANAGE_BLOGS = 'manage:blogs',
+  MANAGE_CATEGORIES = 'manage:categories',
+  MANAGE_ROLES = 'manage:roles',
+  VIEW_ANALYTICS = 'view:analytics',
+  USE_AI = 'use:ai',
+}
+
+export enum PubSubTriggers {
+  NOTIFICATION_CREATED = 'NOTIFICATION_CREATED',
+  ACTIVITY_LOG_CREATED = 'ACTIVITY_LOG_CREATED',
+  ANALYTICS_UPDATED = 'ANALYTICS_UPDATED',
+  USER_STATUS_CHANGED = 'USER_STATUS_CHANGED',
+}
+
+export const ERROR_CODES = {
+  UNAUTHENTICATED: 'UNAUTHENTICATED',
+  FORBIDDEN: 'FORBIDDEN',
+  NOT_FOUND: 'NOT_FOUND',
+  BAD_USER_INPUT: 'BAD_USER_INPUT',
+  INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
+  CONFLICT: 'CONFLICT',
+  RATE_LIMITED: 'RATE_LIMITED',
+};
