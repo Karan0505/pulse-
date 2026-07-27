@@ -10,8 +10,8 @@ import { getRegisteredUsers, registerUser } from "@/lib/user-registry";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
-  const emailParam = searchParams.get("email") || "";
-  const tokenParam = searchParams.get("token") || "";
+  const emailParam = searchParams?.get("email") || "";
+  const tokenParam = searchParams?.get("token") || "";
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
