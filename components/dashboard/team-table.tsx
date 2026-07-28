@@ -145,8 +145,13 @@ export function TeamTable() {
           <tbody className="divide-y divide-canvas-line">
             {loading &&
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i}>
-                  <td colSpan={canManageTeam ? 6 : 5} className="h-14 animate-pulse px-4" />
+                <tr key={i} className="animate-pulse">
+                  <td className="px-4 py-4"><div className="h-4 w-28 rounded bg-canvas-line/60" /></td>
+                  <td className="px-4 py-4"><div className="h-4 w-20 rounded bg-canvas-line/40" /></td>
+                  <td className="px-4 py-4"><div className="h-4 w-24 rounded bg-canvas-line/40" /></td>
+                  <td className="px-4 py-4"><div className="h-5 w-16 rounded-full bg-canvas-line/50" /></td>
+                  <td className="px-4 py-4"><div className="h-3 w-32 rounded-full bg-canvas-line/50" /></td>
+                  {canManageTeam && <td className="px-4 py-4 text-right"><div className="h-6 w-6 rounded bg-canvas-line/40 ml-auto" /></td>}
                 </tr>
               ))}
             {!loading && filtered.length === 0 && (

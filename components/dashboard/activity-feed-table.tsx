@@ -581,8 +581,22 @@ export function ActivityFeedTable({ limit }: { limit?: number }) {
       {/* Project Folders Container List */}
       <div className="space-y-4 max-h-[520px] overflow-y-auto pr-1">
         {activityLoading && (
-          <div className="rounded-2xl border border-canvas-line bg-canvas-raised p-6 text-center animate-pulse text-text-muted font-body text-sm">
-            Loading project folders...
+          <div className="space-y-4">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="rounded-2xl border border-canvas-line bg-canvas-raised p-4 animate-pulse space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-5 w-5 rounded bg-canvas-line/60" />
+                    <div className="h-4 w-40 rounded bg-canvas-line/60" />
+                  </div>
+                  <div className="h-6 w-16 rounded-full bg-canvas-line/60" />
+                </div>
+                <div className="space-y-2 pt-2">
+                  <div className="h-10 w-full rounded-lg bg-canvas-line/30" />
+                  <div className="h-10 w-full rounded-lg bg-canvas-line/30" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

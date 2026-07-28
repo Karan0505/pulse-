@@ -21,7 +21,24 @@ export function ThroughputChart() {
   });
 
   if (loading) {
-    return <div className="h-72 animate-pulse rounded-2xl border border-canvas-line bg-canvas-raised" />;
+    return (
+      <div className="rounded-2xl border border-canvas-line bg-canvas-raised p-5 animate-pulse">
+        <div className="flex items-center justify-between mb-6">
+          <div className="h-4 w-36 rounded bg-canvas-line/60" />
+          <div className="flex gap-4">
+            <div className="h-3 w-16 rounded bg-canvas-line/50" />
+            <div className="h-3 w-16 rounded bg-canvas-line/50" />
+          </div>
+        </div>
+        <div className="h-56 flex items-end justify-between gap-3 pt-6">
+          {[40, 75, 50, 85, 60, 45, 30].map((h, i) => (
+            <div key={i} className="w-full flex flex-col justify-end h-full">
+              <div className="w-full rounded-t bg-canvas-line/40" style={{ height: `${h}%` }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (

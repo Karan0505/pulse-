@@ -15,7 +15,15 @@ export function StatCard({
   loading?: boolean;
 }) {
   if (loading) {
-    return <div className="h-28 animate-pulse rounded-2xl border border-canvas-line bg-canvas-raised" />;
+    return (
+      <div className="rounded-2xl border border-canvas-line bg-canvas-raised p-5 space-y-4 animate-pulse">
+        <div className="flex items-center justify-between">
+          <div className="h-3 w-20 rounded bg-canvas-line/60" />
+          <div className="h-4 w-4 rounded-full bg-canvas-line/60" />
+        </div>
+        <div className="h-8 w-16 rounded bg-canvas-line/80" />
+      </div>
+    );
   }
 
   const labelLower = label.toLowerCase();
