@@ -7,7 +7,8 @@ import { PulseWaveform } from "@/components/marketing/pulse-waveform";
 import { Section, Eyebrow } from "@/components/ui/section";
 import { SmokeButton } from "@/components/ui/smoke-button";
 import { LiveFeedPreview } from "@/components/marketing/live-feed-preview";
-import { ArrowRight } from "lucide-react";
+import { ScrollTextFill, ScrollTextSection } from "@/components/ui/scroll-text-fill";
+import { UnderlinedLink } from "@/components/ui/underlined-link";
 
 export default function HomePage() {
   return (
@@ -35,21 +36,27 @@ export default function HomePage() {
 
         <Section className="grid gap-12 border-t border-canvas-line/70 md:grid-cols-2 md:items-center">
           <div>
-            <Eyebrow>Live, not lagging</Eyebrow>
-            <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight md:text-4xl">
-              The feed updates the moment something happens.
-            </h2>
-            <p className="mt-4 max-w-md font-body text-text-muted">
-              No end-of-day digest, no waiting for a nightly sync. A merge, a
-              review, a deploy or an incident lands in the feed within
-              seconds — subscriptions keep every open dashboard current.
-            </p>
-            <Link
-              href="/features"
-              className="mt-6 inline-flex items-center gap-2 font-body text-sm font-medium text-accent"
-            >
-              See every feature <ArrowRight className="h-4 w-4" />
-            </Link>
+            <ScrollTextSection>
+              <Eyebrow>Live, not lagging</Eyebrow>
+              <ScrollTextFill
+                as="h2"
+                text="The feed updates the moment something happens."
+                className="mt-3 font-display text-3xl font-semibold tracking-tight md:text-4xl text-text-primary"
+                seqRange={[0, 0.38]}
+              />
+              <ScrollTextFill
+                as="p"
+                text="No end-of-day digest, no waiting for a nightly sync. A merge, a review, a deploy or an incident lands in the feed within seconds — subscriptions keep every open dashboard current."
+                className="mt-4 max-w-md font-body text-base"
+                accentColor="rgba(255, 255, 255, 0.95)"
+                seqRange={[0.4, 1.0]}
+              />
+            </ScrollTextSection>
+
+            {/* Link matching Image 1: Monospace uppercase text with underline & arrow right */}
+            <UnderlinedLink href="/features" className="mt-8">
+              SEE EVERY FEATURE
+            </UnderlinedLink>
           </div>
           <LiveFeedPreview />
         </Section>
