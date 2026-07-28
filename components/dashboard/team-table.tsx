@@ -24,10 +24,10 @@ export function TeamTable() {
   const [localMembers, setLocalMembers] = useState<Member[] | null>(null);
 
   // Role detection based on logged in user's email
-  const userEmail = session?.email?.toLowerCase() ?? "admin@pulsebackend.com";
-  const isViewer = userEmail.includes("viewer");
+  const userEmail = session?.email?.toLowerCase() ?? "";
+  const isAdmin = userEmail.includes("admin");
   const isEditor = userEmail.includes("editor");
-  const isAdmin = !isViewer && !isEditor; // default or admin email
+  const isViewer = !isAdmin && !isEditor; // Default for regular users is VIEWER (Read-only)
 
   const currentRoleLabel = isAdmin ? "ADMIN" : isEditor ? "EDITOR" : "VIEWER";
   const canManageTeam = isAdmin || isEditor;

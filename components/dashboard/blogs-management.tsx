@@ -39,10 +39,10 @@ export function BlogsManagement() {
   }, [gqlData]);
 
   // Role detection
-  const userEmail = session?.email?.toLowerCase() ?? "admin@pulsebackend.com";
-  const isViewer = userEmail.includes("viewer");
+  const userEmail = session?.email?.toLowerCase() ?? "";
+  const isAdmin = userEmail.includes("admin");
   const isEditor = userEmail.includes("editor");
-  const isAdmin = !isViewer && !isEditor;
+  const isViewer = !isAdmin && !isEditor; // Default for regular users is VIEWER (Read-only)
 
   const canManageBlogs = isAdmin || isEditor; // Both Admin and Editor can create/edit/delete blogs
   const currentRoleLabel = isAdmin ? "ADMIN" : isEditor ? "EDITOR" : "VIEWER";
