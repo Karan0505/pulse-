@@ -1,4 +1,5 @@
 import { makeExecutableSchema } from "@graphql-tools/schema";
+import { getSavedBlogs } from "@/lib/blog-registry";
 import {
   features,
   pricingTiers,
@@ -231,35 +232,11 @@ const resolvers = {
     features: () => features,
     pricingTiers: () => pricingTiers,
     blogPosts: async () => {
-      if (typeof window !== "undefined") {
-        try {
-          const res = await fetch("/api/blogs");
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-              return data;
-            }
-          }
-        } catch (err) {
-          console.error("Fetch /api/blogs error:", err);
-        }
-      }
-      return blogPosts;
+      return getSavedBlogs();
     },
     blogPost: async (_: unknown, { slug }: { slug: string }) => {
-      if (typeof window !== "undefined") {
-        try {
-          const res = await fetch("/api/blogs");
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data)) {
-              const found = data.find((b: { slug: string }) => b.slug === slug);
-              if (found) return found;
-            }
-          }
-        } catch (err) {}
-      }
-      return blogPosts.find((p) => p.slug === slug) ?? null;
+      const blogs = getSavedBlogs();
+      return blogs.find((p: any) => p.slug === slug) ?? null;
     },
     projects: () => getSavedProjects(),
     activityFeed: (_: unknown, { repo }: { repo?: string }) => {

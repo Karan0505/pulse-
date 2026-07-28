@@ -7,6 +7,13 @@ import clsx from "clsx";
 import { useAuth } from "@/lib/auth-context";
 import { GET_BLOG_POSTS } from "@/lib/graphql/queries";
 
+import {
+  getSavedBlogs,
+  addBlogPost,
+  updateBlogPost,
+  deleteBlogPost,
+} from "@/lib/blog-registry";
+
 type BlogPost = {
   id: string;
   slug: string;
@@ -22,21 +29,33 @@ type BlogPost = {
 export function BlogsManagement() {
   const { session } = useAuth();
   
-  // Live GraphQL polling every 3 seconds from Prisma database
+  // Live GraphQL polling every 3 seconds
   const { data: gqlData } = useQuery<{ blogPosts: BlogPost[] }>(GET_BLOG_POSTS, {
     pollInterval: 3000,
   });
 
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>(() => getSavedBlogs());
   const [createOpen, setCreateOpen] = useState(false);
   const [editPost, setEditPost] = useState<BlogPost | null>(null);
 
-  // Sync state whenever GraphQL data updates from Prisma DB
+  // Sync state with localStorage and GraphQL
   useEffect(() => {
-    if (gqlData?.blogPosts) {
+    const saved = getSavedBlogs();
+    if (saved && saved.length > 0) {
+      setPosts(saved);
+    } else if (gqlData?.blogPosts) {
       setPosts(gqlData.blogPosts);
     }
   }, [gqlData]);
+
+  // Listen for storage/blog update events across components
+  useEffect(() => {
+    const handleUpdate = () => {
+      setPosts(getSavedBlogs());
+    };
+    window.addEventListener("pulse_blogs_updated", handleUpdate);
+    return () => window.removeEventListener("pulse_blogs_updated", handleUpdate);
+  }, []);
 
   // Role detection
   const userEmail = session?.email?.toLowerCase() ?? "";
@@ -49,40 +68,41 @@ export function BlogsManagement() {
 
   const handleDelete = (id: string) => {
     if (!confirm("Are you sure you want to delete this blog post?")) return;
-    setPosts((prev) => prev.filter((p) => p.id !== id));
+    const updated = deleteBlogPost(id);
+    setPosts(updated);
   };
 
   const handleSavePost = (data: { title: string; tag: string; excerpt: string; body: string }) => {
     if (editPost) {
       // Update
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === editPost.id
-            ? {
-                ...p,
-                title: data.title || p.title,
-                excerpt: data.excerpt || p.excerpt,
-                tag: data.tag || p.tag,
-                body: [data.body || p.body[0] || ""],
-              }
-            : p
-        )
-      );
+      const updatedItem: BlogPost = {
+        ...editPost,
+        title: data.title || editPost.title,
+        excerpt: data.excerpt || editPost.excerpt,
+        tag: data.tag || editPost.tag,
+        body: [data.body || editPost.body[0] || ""],
+      };
+      const updatedList = updateBlogPost(updatedItem);
+      setPosts(updatedList);
       setEditPost(null);
     } else {
       // Create
       const created: BlogPost = {
         id: `b-${Date.now()}`,
-        slug: (data.title || "new-post").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+        slug: (data.title || "new-post")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, ""),
         title: data.title || "Untitled Post",
         excerpt: data.excerpt || "New post description...",
-        author: session?.email.split("@")[0] ?? "Author",
+        author: session?.email ? session.email.split("@")[0] : "Admin User",
         date: new Date().toISOString().split("T")[0],
-        readMinutes: 4,
+        readMinutes: Math.max(2, Math.ceil((data.body || "").length / 400)) || 4,
         tag: data.tag || "Engineering",
         body: [data.body || "Blog content..."],
       };
-      setPosts((prev) => [created, ...prev]);
+      const updatedList = addBlogPost(created);
+      setPosts(updatedList);
       setCreateOpen(false);
     }
   };
