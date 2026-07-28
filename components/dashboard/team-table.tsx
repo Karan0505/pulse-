@@ -30,6 +30,7 @@ export function TeamTable() {
   const isAdmin = !isViewer && !isEditor; // default or admin email
 
   const currentRoleLabel = isAdmin ? "ADMIN" : isEditor ? "EDITOR" : "VIEWER";
+  const canManageTeam = isAdmin || isEditor;
 
   const [inviteMember] = useMutation<
     { inviteMember: Member },
@@ -96,9 +97,13 @@ export function TeamTable() {
             {currentRoleLabel}
           </span>
         </div>
-        {isViewer && (
+        {canManageTeam ? (
+          <span className="font-mono text-xs text-pulse font-medium">
+            ✅ You have permission to Manage, Edit & Delete team members.
+          </span>
+        ) : (
           <span className="font-mono text-xs text-text-muted italic">
-            🔒 Read-only view (Inviting and role modifications disabled)
+            🔒 Read-only view (Inviting, editing and role modifications restricted to Admin & Editor)
           </span>
         )}
       </div>
@@ -114,8 +119,8 @@ export function TeamTable() {
           />
         </div>
 
-        {/* Only Admin can see and click "Invite member" */}
-        {isAdmin && (
+        {/* Admin & Editor can see and click "Invite member" */}
+        {canManageTeam && (
           <button
             onClick={() => setInviteOpen(true)}
             className="flex items-center justify-center gap-2 rounded-full bg-accent px-4 py-2 font-body text-sm font-medium text-canvas transition-opacity hover:opacity-90"
@@ -134,20 +139,20 @@ export function TeamTable() {
               <th className="px-4 py-3 font-medium">Team</th>
               <th className="px-4 py-3 font-medium">Status</th>
               <th className="px-4 py-3 font-medium">Load</th>
-              {isAdmin && <th className="px-4 py-3 font-medium text-right">Actions</th>}
+              {canManageTeam && <th className="px-4 py-3 font-medium text-right">Actions</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-canvas-line">
             {loading &&
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i}>
-                  <td colSpan={isAdmin ? 6 : 5} className="h-14 animate-pulse px-4" />
+                  <td colSpan={canManageTeam ? 6 : 5} className="h-14 animate-pulse px-4" />
                 </tr>
               ))}
             {!loading && filtered.length === 0 && (
               <tr>
                 <td
-                  colSpan={isAdmin ? 6 : 5}
+                  colSpan={canManageTeam ? 6 : 5}
                   className="px-4 py-8 text-center font-body text-sm text-text-muted"
                 >
                   No members match your search.
@@ -160,9 +165,9 @@ export function TeamTable() {
                   {m.name}
                 </td>
                 
-                {/* Role Column: Editable dropdown for Admin, text for Editor/Viewer */}
+                {/* Role Column: Editable dropdown for Admin & Editor, text for Viewer */}
                 <td className="px-4 py-3 font-body text-sm">
-                  {isAdmin ? (
+                  {canManageTeam ? (
                     <select
                       value={m.role}
                       onChange={(e) => handleRoleChange(m.id, e.target.value)}
@@ -179,9 +184,9 @@ export function TeamTable() {
 
                 <td className="px-4 py-3 font-body text-sm text-text-muted">{m.team}</td>
                 
-                {/* Status Column: Editable for Admin, badge for others */}
+                {/* Status Column: Editable for Admin & Editor, badge for Viewer */}
                 <td className="px-4 py-3">
-                  {isAdmin ? (
+                  {canManageTeam ? (
                     <select
                       value={m.status}
                       onChange={(e) => handleStatusChange(m.id, e.target.value)}
@@ -225,8 +230,8 @@ export function TeamTable() {
                   </div>
                 </td>
 
-                {/* Actions Column: Admin only */}
-                {isAdmin && (
+                {/* Actions Column: Admin and Editor */}
+                {canManageTeam && (
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => handleRemoveMember(m.id)}
@@ -243,7 +248,7 @@ export function TeamTable() {
         </table>
       </div>
 
-      {inviteOpen && isAdmin && (
+      {inviteOpen && canManageTeam && (
         <InviteModal
           onClose={() => setInviteOpen(false)}
           onInvite={async (email, role) => {
