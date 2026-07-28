@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client/react";
-import { GitPullRequest, Timer, Rocket, TriangleAlert, Users, RefreshCw, Radio } from "lucide-react";
+import { GitPullRequest, Timer, Rocket, TriangleAlert, Users, RefreshCw, Sparkles } from "lucide-react";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { ThroughputChart } from "@/components/dashboard/throughput-chart";
 import { ActivityFeedTable } from "@/components/dashboard/activity-feed-table";
@@ -20,10 +20,30 @@ export default function OverviewPage() {
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "quarter">("7d");
   const [activeMetric, setActiveMetric] = useState<string | null>(null);
 
+  // Initial skeleton loading delay (1.2s) & toggle button for Skeleton Preview
+  const [isSimulatedLoading, setIsSimulatedLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsSimulatedLoading(false);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Poll analytics summary live every 3 seconds
-  const { data, loading, refetch } = useQuery<{ analyticsSummary: Summary }>(GET_ANALYTICS_SUMMARY, {
+  const { data, loading: queryLoading, refetch } = useQuery<{ analyticsSummary: Summary }>(GET_ANALYTICS_SUMMARY, {
     pollInterval: 3000,
   });
+
+  const isLoading = isSimulatedLoading || queryLoading;
+
+  const handleRefresh = async () => {
+    setIsSimulatedLoading(true);
+    await refetch();
+    setTimeout(() => {
+      setIsSimulatedLoading(false);
+    }, 1200);
+  };
 
   const baseSummary = data?.analyticsSummary;
 
@@ -58,8 +78,21 @@ export default function OverviewPage() {
           </p>
         </div>
 
-        {/* Dynamic Controls: Time Range Tabs & Manual Refresh */}
+        {/* Dynamic Controls: Time Range Tabs, Refresh & Skeleton Toggle */}
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsSimulatedLoading((prev) => !prev)}
+            className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 font-body text-xs font-medium transition-all ${
+              isSimulatedLoading
+                ? "border-accent bg-accent/20 text-accent font-semibold shadow"
+                : "border-canvas-line bg-canvas-raised text-text-muted hover:text-text-primary hover:border-accent/40"
+            }`}
+            title="Toggle Skeleton Loading view"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-accent" />
+            <span>Skeleton Loading</span>
+          </button>
+
           <div className="flex items-center rounded-xl border border-canvas-line bg-canvas-raised p-1">
             <button
               onClick={() => setTimeRange("7d")}
@@ -85,11 +118,11 @@ export default function OverviewPage() {
           </div>
 
           <button
-            onClick={() => refetch()}
+            onClick={handleRefresh}
             className="flex items-center gap-1.5 rounded-xl border border-canvas-line bg-canvas-raised px-3 py-2 font-body text-xs font-medium text-text-muted hover:border-accent/40 hover:text-text-primary transition-all active:scale-95"
             title="Refresh Live Data"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin text-accent" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin text-accent" : ""}`} />
             <span className="hidden sm:inline">Refresh</span>
           </button>
         </div>
@@ -101,39 +134,39 @@ export default function OverviewPage() {
           onClick={() => setActiveMetric(activeMetric === "prs" ? null : "prs")}
           className={`cursor-pointer transition-transform active:scale-98 ${activeMetric === "prs" ? "ring-2 ring-accent rounded-2xl" : ""}`}
         >
-          <StatCard label="Open PRs" value={summary ? String(summary.openPRs) : ""} icon={GitPullRequest} loading={loading} />
+          <StatCard label="Open PRs" value={summary ? String(summary.openPRs) : ""} icon={GitPullRequest} loading={isLoading} />
         </div>
         <div
           onClick={() => setActiveMetric(activeMetric === "review" ? null : "review")}
           className={`cursor-pointer transition-transform active:scale-98 ${activeMetric === "review" ? "ring-2 ring-accent rounded-2xl" : ""}`}
         >
-          <StatCard label="Avg review time" value={summary ? `${summary.avgReviewHours}h` : ""} icon={Timer} loading={loading} />
+          <StatCard label="Avg review time" value={summary ? `${summary.avgReviewHours}h` : ""} icon={Timer} loading={isLoading} />
         </div>
         <div
           onClick={() => setActiveMetric(activeMetric === "deploys" ? null : "deploys")}
           className={`cursor-pointer transition-transform active:scale-98 ${activeMetric === "deploys" ? "ring-2 ring-pulse rounded-2xl" : ""}`}
         >
-          <StatCard label="Deploys" value={summary ? String(summary.deploysThisWeek) : ""} icon={Rocket} tone="pulse" loading={loading} />
+          <StatCard label="Deploys" value={summary ? String(summary.deploysThisWeek) : ""} icon={Rocket} tone="pulse" loading={isLoading} />
         </div>
         <div
           onClick={() => setActiveMetric(activeMetric === "incidents" ? null : "incidents")}
           className={`cursor-pointer transition-transform active:scale-98 ${activeMetric === "incidents" ? "ring-2 ring-danger rounded-2xl" : ""}`}
         >
-          <StatCard label="Incidents" value={summary ? String(summary.incidentsThisWeek) : ""} icon={TriangleAlert} tone="danger" loading={loading} />
+          <StatCard label="Incidents" value={summary ? String(summary.incidentsThisWeek) : ""} icon={TriangleAlert} tone="danger" loading={isLoading} />
         </div>
         <div
           onClick={() => setActiveMetric(activeMetric === "members" ? null : "members")}
           className={`cursor-pointer transition-transform active:scale-98 ${activeMetric === "members" ? "ring-2 ring-accent rounded-2xl" : ""}`}
         >
-          <StatCard label="Total members" value={summary ? String(summary.activeMembers) : ""} icon={Users} loading={loading} />
+          <StatCard label="Total members" value={summary ? String(summary.activeMembers) : ""} icon={Users} loading={isLoading} />
         </div>
       </div>
 
       {/* Throughput Chart with Live Polling */}
-      <ThroughputChart />
+      <ThroughputChart loading={isLoading} />
 
       {/* Live Activity Feed Table */}
-      <ActivityFeedTable limit={5} />
+      <ActivityFeedTable limit={5} loading={isLoading} />
     </div>
   );
 }

@@ -184,7 +184,7 @@ function CustomSelect({
   );
 }
 
-export function ActivityFeedTable({ limit }: { limit?: number }) {
+export function ActivityFeedTable({ limit, loading: externalLoading }: { limit?: number; loading?: boolean } = {}) {
   const { session } = useAuth();
   const userEmail = (session?.email || "").toLowerCase();
   
@@ -199,11 +199,13 @@ export function ActivityFeedTable({ limit }: { limit?: number }) {
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
-  const { data: activityData, loading: activityLoading, refetch: refetchActivity } = useQuery<{
+  const { data: activityData, loading: queryLoading, refetch: refetchActivity } = useQuery<{
     activityFeed: Event[];
   }>(GET_ACTIVITY_FEED, {
     pollInterval: limit || !isPageVisible ? undefined : 10000,
   });
+
+  const activityLoading = externalLoading ?? queryLoading;
 
   const { data: projectsData, refetch: refetchProjects } = useQuery<{
     projects: Project[];

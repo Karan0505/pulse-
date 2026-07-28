@@ -15,10 +15,12 @@ import { GET_WEEKLY_THROUGHPUT } from "@/lib/graphql/queries";
 
 type Day = { day: string; merges: number; incidents: number };
 
-export function ThroughputChart() {
-  const { data, loading } = useQuery<{ weeklyThroughput: Day[] }>(GET_WEEKLY_THROUGHPUT, {
+export function ThroughputChart({ loading: externalLoading }: { loading?: boolean } = {}) {
+  const { data, loading: queryLoading } = useQuery<{ weeklyThroughput: Day[] }>(GET_WEEKLY_THROUGHPUT, {
     pollInterval: 3000,
   });
+
+  const loading = externalLoading ?? queryLoading;
 
   if (loading) {
     return (

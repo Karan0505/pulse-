@@ -16,9 +16,10 @@ type Member = {
   load: number;
 };
 
-export function TeamTable() {
+export function TeamTable({ loading: externalLoading }: { loading?: boolean } = {}) {
   const { session } = useAuth();
-  const { data, loading } = useQuery<{ teamMembers: Member[] }>(GET_TEAM_MEMBERS);
+  const { data, loading: queryLoading } = useQuery<{ teamMembers: Member[] }>(GET_TEAM_MEMBERS);
+  const loading = externalLoading ?? queryLoading;
   const [query, setQuery] = useState("");
   const [inviteOpen, setInviteOpen] = useState(false);
   const [localMembers, setLocalMembers] = useState<Member[] | null>(null);
