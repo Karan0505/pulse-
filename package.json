@@ -54,6 +54,7 @@
     "pino": "^9.6.0",
     "pino-http": "^10.4.0",
     "react": "^19.0.0",
+    "react-calendly": "^4.4.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
     "recharts": "^2.15.4",

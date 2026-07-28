@@ -2,17 +2,19 @@ import { Navbar } from "@/components/marketing/navbar";
 import { Footer } from "@/components/marketing/footer";
 import { Section, Eyebrow } from "@/components/ui/section";
 import { ContactForm } from "@/components/marketing/contact-form";
+import { CalendlyBooking } from "@/components/marketing/calendly-booking";
 
 export const metadata = {
   title: "Contact — Pulse",
-  description: "Talk to the Pulse team.",
+  description: "Talk to the Pulse team & schedule a 30-min intro call.",
 };
 
 export default function ContactPage() {
   return (
     <>
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1 space-y-12">
+        {/* Top Section: Info & Contact Form */}
         <Section className="grid gap-12 pt-20 md:grid-cols-2 md:pt-28">
           <div>
             <Eyebrow>Contact</Eyebrow>
@@ -35,7 +37,14 @@ export default function ContactPage() {
               </div>
             </dl>
           </div>
-          <ContactForm />
+          <div>
+            <ContactForm />
+          </div>
+        </Section>
+
+        {/* Full-Page Width Section: 30 Min Free Intro Call Calendly Widget */}
+        <Section className="pb-16 pt-0!">
+          <CalendlyBooking />
         </Section>
       </main>
       <Footer />

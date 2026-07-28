@@ -79,13 +79,19 @@ export function NotificationPopover() {
       const customEvent = e as CustomEvent<{ title?: string; body?: string }>;
       handleAddNotification(customEvent.detail?.title, customEvent.detail?.body);
     }
+    function handlePulseNotifUpdate() {
+      refetch();
+      ringBell();
+    }
 
     document.addEventListener("mousedown", handleClickOutside);
     window.addEventListener("new-notification", handleNewNotificationEvent);
+    window.addEventListener("pulse_notifications_updated", handlePulseNotifUpdate);
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       window.removeEventListener("new-notification", handleNewNotificationEvent);
+      window.removeEventListener("pulse_notifications_updated", handlePulseNotifUpdate);
     };
   }, []);
 
