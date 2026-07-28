@@ -1,33 +1,40 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client/react";
 import Link from "next/link";
 import { GET_BLOG_POSTS } from "@/lib/graphql/queries";
 import { Section } from "@/components/ui/section";
 import { ArrowUpRight } from "lucide-react";
-
-type Post = {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  author: string;
-  date: string;
-  readMinutes: number;
-  tag: string;
-};
+import { getSavedBlogs, BlogPost } from "@/lib/blog-registry";
 
 export function BlogList() {
-  const { data, loading } = useQuery<{ blogPosts: Post[] }>(GET_BLOG_POSTS);
+  const { data, loading } = useQuery<{ blogPosts: BlogPost[] }>(GET_BLOG_POSTS);
+  const [posts, setPosts] = useState<BlogPost[]>(() => getSavedBlogs());
+
+  useEffect(() => {
+    const saved = getSavedBlogs();
+    if (saved && saved.length > 0) {
+      setPosts(saved);
+    } else if (data?.blogPosts) {
+      setPosts(data.blogPosts);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    const handleUpdate = () => setPosts(getSavedBlogs());
+    window.addEventListener("pulse_blogs_updated", handleUpdate);
+    return () => window.removeEventListener("pulse_blogs_updated", handleUpdate);
+  }, []);
 
   return (
     <Section className="pt-4">
       <div className="divide-y divide-canvas-line border-t border-canvas-line">
-        {loading &&
+        {loading && posts.length === 0 &&
           Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-28 animate-pulse py-8" />
           ))}
-        {data?.blogPosts.map((post) => (
+        {posts.map((post) => (
           <Link
             key={post.id}
             href={`/blog/${post.slug}`}
@@ -54,9 +61,13 @@ export function BlogList() {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  try {
+    return new Date(iso).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return iso;
+  }
 }
