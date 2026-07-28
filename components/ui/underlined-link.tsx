@@ -10,13 +10,23 @@ interface UnderlinedLinkProps {
   href: string;
   children: string;
   className?: string;
+  variant?: "white" | "accent";
 }
 
-export function UnderlinedLink({ href, children, className }: UnderlinedLinkProps) {
+export function UnderlinedLink({
+  href,
+  children,
+  className,
+  variant = "accent",
+}: UnderlinedLinkProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   // Split text into characters for 1-by-1 staggered animation
   const letters = Array.from(children);
+
+  const isWhite = variant === "white";
+  const textClass = isWhite ? "text-white" : "text-accent";
+  const bgClass = isWhite ? "bg-white" : "bg-accent";
 
   return (
     <Link
@@ -24,7 +34,8 @@ export function UnderlinedLink({ href, children, className }: UnderlinedLinkProp
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={clsx(
-        "group inline-flex w-fit items-end font-mono text-xs font-semibold uppercase tracking-widest text-white cursor-pointer select-none pb-1",
+        "group inline-flex w-fit items-end font-mono text-xs font-semibold uppercase tracking-widest cursor-pointer select-none pb-1",
+        textClass,
         className
       )}
     >
@@ -68,7 +79,7 @@ export function UnderlinedLink({ href, children, className }: UnderlinedLinkProp
                 delay: i * 0.022,
                 ease: "easeInOut",
               }}
-              className="mt-1.5 h-[1.5px] w-full bg-white block"
+              className={clsx("mt-1.5 h-[1.5px] w-full block", bgClass)}
             />
           </span>
         ))}
@@ -90,7 +101,7 @@ export function UnderlinedLink({ href, children, className }: UnderlinedLinkProp
               delay: letters.length * 0.022,
               ease: "easeInOut",
             }}
-            className="mt-1.5 h-[1.5px] w-full bg-white block"
+            className={clsx("mt-1.5 h-[1.5px] w-full block", bgClass)}
           />
         </span>
 
@@ -111,7 +122,7 @@ export function UnderlinedLink({ href, children, className }: UnderlinedLinkProp
                 ease: "easeInOut",
               }}
             >
-              <ArrowRight className="h-3.5 w-3.5 text-white" />
+              <ArrowRight className={clsx("h-3.5 w-3.5", textClass)} />
             </motion.div>
           </div>
 
@@ -130,7 +141,7 @@ export function UnderlinedLink({ href, children, className }: UnderlinedLinkProp
               delay: (letters.length + 1) * 0.022,
               ease: "easeInOut",
             }}
-            className="mt-1.5 h-[1.5px] w-full bg-white block"
+            className={clsx("mt-1.5 h-[1.5px] w-full block", bgClass)}
           />
         </span>
       </div>

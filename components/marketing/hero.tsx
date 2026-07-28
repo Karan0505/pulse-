@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { PulseWaveform } from "./pulse-waveform";
-import { SmokeButton } from "@/components/ui/smoke-button";
+import { UnderlinedLink } from "@/components/ui/underlined-link";
 
 export function Hero() {
   return (
@@ -44,25 +44,17 @@ export function Hero() {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
-          className="mt-9 flex flex-col gap-4 sm:flex-row"
+          className="mt-9 flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-10"
         >
-          {/* Primary Smoke Button with Particle Dissolve */}
-          <SmokeButton
-            href="/signup"
-            variant="primary"
-            hoverText="Claim Free Spot ⚡"
-          >
-            Start free — 8 members
-          </SmokeButton>
+          {/* Accent Variant for Start Free */}
+          <UnderlinedLink href="/signup" variant="accent">
+            START FREE — 8 MEMBERS
+          </UnderlinedLink>
 
-          {/* Secondary Smoke Button with Particle Dissolve */}
-          <SmokeButton
-            href="/dashboard"
-            variant="secondary"
-            hoverText="Explore Live Feed 📊"
-          >
-            See a live dashboard
-          </SmokeButton>
+          {/* White Variant for See a Live Dashboard (as requested) */}
+          <UnderlinedLink href="/dashboard" variant="white">
+            SEE A LIVE DASHBOARD
+          </UnderlinedLink>
         </motion.div>
       </div>
 

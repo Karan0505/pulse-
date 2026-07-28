@@ -5,7 +5,6 @@ import { Hero } from "@/components/marketing/hero";
 import { FeatureGrid } from "@/components/marketing/feature-grid";
 import { PulseWaveform } from "@/components/marketing/pulse-waveform";
 import { Section, Eyebrow } from "@/components/ui/section";
-import { SmokeButton } from "@/components/ui/smoke-button";
 import { LiveFeedPreview } from "@/components/marketing/live-feed-preview";
 import { ScrollTextFill, ScrollTextSection } from "@/components/ui/scroll-text-fill";
 import { UnderlinedLink } from "@/components/ui/underlined-link";
@@ -53,15 +52,15 @@ export default function HomePage() {
               />
             </ScrollTextSection>
 
-            {/* Link matching Image 1: Monospace uppercase text with underline & arrow right */}
-            <UnderlinedLink href="/features" className="mt-8">
+            {/* SEE EVERY FEATURE link in Accent Brown/Amber (#FFB454) as requested */}
+            <UnderlinedLink href="/features" variant="accent" className="mt-8">
               SEE EVERY FEATURE
             </UnderlinedLink>
           </div>
           <LiveFeedPreview />
         </Section>
 
-        <Section className="border-t border-canvas-line/70 text-center">
+        <Section className="border-t border-canvas-line/70 text-center flex flex-col items-center">
           <Eyebrow>Get started</Eyebrow>
           <h2 className="mx-auto mt-3 max-w-xl font-display text-3xl font-semibold tracking-tight md:text-4xl">
             Eight members, free, forever.
@@ -70,13 +69,13 @@ export default function HomePage() {
             Connect a repository and see your team&apos;s first pulse feed in
             under five minutes.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <SmokeButton href="/signup" variant="primary">
-              Start free
-            </SmokeButton>
-            <SmokeButton href="/pricing" variant="secondary">
-              See pricing
-            </SmokeButton>
+          <div className="mt-8 flex flex-col items-center justify-center gap-6 sm:flex-row sm:gap-10">
+            <UnderlinedLink href="/signup" variant="accent">
+              START FREE
+            </UnderlinedLink>
+            <UnderlinedLink href="/pricing" variant="accent">
+              SEE PRICING
+            </UnderlinedLink>
           </div>
         </Section>
       </main>
